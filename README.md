@@ -20,7 +20,8 @@ nc.addQueryParam("refresh_token", refreshToken);
 nc.addQueryParam("client_id", clientId); 
 nc.addQueryParam("client_secret", clientSecret); 
 nc.addQueryParam("grant_type", "refresh_token"); 
-nc.doPost("");
+nc.doPost();
+std::cout << nc.responseBody();
 ```
 
 Do a POST request with RAW data:
