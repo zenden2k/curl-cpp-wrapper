@@ -1,6 +1,7 @@
 # curl-cpp-wrapper
 
 A very simple HTTP client (C++ wrapper for curl). Requires libcurl http://curl.haxx.se
+
 If you are using Visual C++ your also have to install msinttypes (headers are provided in "include" directory).
 
 Usage
