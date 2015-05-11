@@ -9,7 +9,7 @@ Usage
 Do a GET request:
 ```cpp
 NetworkClient nc;
-nc.doGet("http://google.com/?q=" + nc.urlEncode("Smelly cat");
+nc.doGet("http://google.com/?q=" + nc.urlEncode("Smelly cat"));
 std::cout << nc.responseBody();
 ```
 
