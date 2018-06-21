@@ -24,14 +24,15 @@
 #include <sstream>  // ostringstream
 #include <iostream>
 #include <string>
-#include "Core/3rdpart/utf8.h"
-#include "Core/Utils/StringUtils.h"
+#include <stdlib.h>
+#include "../3rdpart/utf8.h"
+#include "StringUtils.h"
 #include <errno.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
 #include <string.h>
-#include <sys/stat.h>   
+#include <sys/stat.h>
 
 typedef struct stat Stat;
 

@@ -77,8 +77,8 @@ template <class T> struct EnumWrapper
 
 // std::shared_ptr release() implementation
 // thx to http://stackoverflow.com/questions/1833356/detach-a-pointer-from-a-shared-ptr/5995770#5995770
-// 
-template <typename T>
+//
+/*template <typename T>
 class release_deleter{
 public:
 	release_deleter() : released_(new bool(false)){}
@@ -88,11 +88,11 @@ public:
 		if(!*released_)  {
 			delete ptr;
 		}
-			
+
 	}
 
 private:
 	//DISALLOW_COPY_AND_ASSIGN(release_deleter<T>);
 	std_tr::shared_ptr<bool> released_;
-};
+};*/
 #endif
