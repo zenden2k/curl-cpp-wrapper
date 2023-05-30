@@ -452,7 +452,7 @@ bool NetworkClient::doPost(const NString& data) {
         curl_easy_setopt(curlHandle_, CURLOPT_POST, 1L);
     std::string postData;
 
-    for (auto it: queryParams_) {
+    for (const auto& it: queryParams_) {
         if (!it.isFile) {
             postData += urlEncode(it.name) + "=" + urlEncode(it.value) + "&";
         }
@@ -601,7 +601,6 @@ size_t NetworkClient::private_read_callback(void* ptr, size_t size, size_t nmemb
     return retcode;
 }
 
-
 bool NetworkClient::doUpload(const NString& fileName, const NString& data) {
     if (!fileName.empty()) {
         uploadingFile_ = NetworkClientInternal::FopenUtf8(fileName.c_str(), "rb"); 
@@ -631,9 +630,9 @@ bool NetworkClient::doUpload(const NString& fileName, const NString& data) {
     curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDS, nullptr);
     curl_easy_setopt(curlHandle_, CURLOPT_READDATA, this);
 
-    if (m_method != "PUT") {
-    //addQueryHeader("Content-Length", std::to_string(currentUploadDataSize_));
-    }
+    /*if (m_method != "PUT") {
+    addQueryHeader("Content-Length", std::to_string(currentUploadDataSize_));
+    }*/
     private_initTransfer();
     curl_easy_setopt(curlHandle_, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(currentUploadDataSize_));
 
@@ -694,7 +693,6 @@ NString NetworkClient::getCurlResultString() const {
     const char* str = curl_easy_strerror(curlResult_);
     return str;
 }
-
 
 void NetworkClient::setCurlOption(int option, const NString& value) {
     curl_easy_setopt(curlHandle_, static_cast<CURLoption>(option), value.c_str());
