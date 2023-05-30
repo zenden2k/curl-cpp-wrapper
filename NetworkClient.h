@@ -25,12 +25,6 @@
 #include <vector>
 
 #include <curl/curl.h>
-//#include <curl/types.h>
-#ifdef NETWORKCLIENT_USEMUTEX
-#include <mutex>
-#endif
-
-#include "Core/Utils/CoreUtils.h"
 
 using NString = std::string;
 
@@ -45,8 +39,8 @@ public:
         atGet
     };
 
-    NetworkClient(void);
-    ~NetworkClient(void);
+    NetworkClient();
+    ~NetworkClient();
     NetworkClient(NetworkClient const&) = delete;
     void operator=(NetworkClient const& x) = delete;
 
@@ -65,13 +59,14 @@ public:
      * @param displayName is the display name (the name that is transferred to the server does not contain a path),
      *
      * @param contentType is the mime file type, can be an empty string or obtained using the GetFileMimeType function).
-     * The method is similar to the HTML form element - <input type = "file">.
+     * The method is similar to the HTML form element - <input type="file">.
     */
     void addQueryParamFile(const NString& name, const NString& fileName, const NString& displayName = "",
                            const NString& contentType = "");
 
     /**
-     * Sets the value of the HTTP request header. To delete a header, pass in an empty string. To set an empty value, pass "\n".
+     * Sets the value of the HTTP request header. To delete a header, pass in an empty string.
+     * To set an empty value, pass new line.
      */
     void addQueryHeader(const NString& name, const NString& value);
 
@@ -114,17 +109,14 @@ public:
     void setCurlOptionInt(int option, long value);
     void setMethod(const NString& str);
     void setProxy(const NString& host, int port, int type);
-    void setProxyUserPassword(const NString& username, const NString password);
+    void setProxyUserPassword(const NString& username, const NString& password);
     void setReferer(const NString& str);
     void setOutputFile(const NString& str);
-    void setUploadBufferSize(const int size);
-    void setChunkOffset(double offset);
-    void setChunkSize(double size);
-    void setTreatErrorsAsWarnings(bool treat);
-    int getCurlResult();
+    void setUploadBufferSize(int size);
+    void setChunkOffset(int64_t offset);
+    void setChunkSize(int64_t size);
+    int getCurlResult() const;
     CURL* getCurlHandle();
-    static void Uninitialize();
-    void enableResponseCodeChecking(bool enable);
 private:
     enum CallBackFuncType { funcTypeBody, funcTypeHeader };
 
@@ -150,10 +142,10 @@ private:
     };
 
     static size_t read_callback(void* ptr, size_t size, size_t nmemb, void* stream);
-    static int ProgressFunc(void* clientp, double dltotal, double dlnow, double ultotal, double ulnow);
-    static int private_static_writer(char* data, size_t size, size_t nmemb, void* buffer_in);
-    int private_writer(char* data, size_t size, size_t nmemb);
-    int private_header_writer(char* data, size_t size, size_t nmemb);
+    static size_t private_progress_func(void* clientp, double dltotal, double dlnow, double ultotal, double ulnow);
+    static size_t private_static_writer(char* data, size_t size, size_t nmemb, void* buffer_in);
+    size_t private_writer(char* data, size_t size, size_t nmemb);
+    size_t private_header_writer(char* data, size_t size, size_t nmemb);
     size_t private_read_callback(void* ptr, size_t size, size_t nmemb, void* stream);
     static int set_sockopts(void* clientp, curl_socket_t sockfd, curlsocktype purpose);
     bool private_apply_method();
@@ -162,44 +154,34 @@ private:
     void private_cleanup_after();
     bool private_on_finish_request();
     void private_initTransfer();
-    void private_checkResponse();
-    static void curl_cleanup();
 
-    int m_UploadBufferSize;
-    CURL* curl_handle;
-    FILE* m_hOutFile;
-    std::string m_OutFileName;
-    FILE* m_uploadingFile;
-    std::string m_uploadData;
-    ActionType m_currentActionType;
-    int m_nUploadDataOffset;
-    CallBackData m_bodyFuncData;
-    curl_progress_callback m_progressCallbackFunc;
-    CallBackData m_headerFuncData;
-    NString m_url;
-    void* m_progressData;
-    CURLcode curl_result;
-    int64_t m_CurrentFileSize;
-    int64_t m_currentUploadDataSize;
-    std::vector<QueryParam> m_QueryParams;
-    std::vector<CustomHeaderItem> m_QueryHeaders;
-    std::vector<CustomHeaderItem> m_ResponseHeaders;
-    std::string internalBuffer;
-    std::string m_headerBuffer;
-    NString m_userAgent;
+    int uploadBufferSize_;
+    CURL* curlHandle_;
+    FILE* outFile_;
+    std::string outFileName_;
+    FILE* uploadingFile_;
+    std::string uploadData_;
+    ActionType currentActionType_;
+    size_t uploadDataOffset_;
+    CallBackData bodyFuncData_;
+    curl_progress_callback progressCallback_;
+    CallBackData headerFuncData_;
+    NString url_;
+    void* progressData_;
+    CURLcode curlResult_;
+    int64_t currentFileSize_;
+    int64_t currentUploadDataSize_;
+    std::vector<QueryParam> queryParams_;
+    std::vector<CustomHeaderItem> queryHeaders_;
+    std::vector<CustomHeaderItem> responseHeaders_;
+    std::string internalBuffer_;
+    std::string headerBuffer_;
+    NString userAgent_;
     char m_errorBuffer[CURL_ERROR_SIZE];
     std::string m_method;
     struct curl_slist* chunk_;
-    bool enableResponseCodeChecking_;
     int64_t chunkOffset_;
     int64_t chunkSize_;
-    bool treatErrorsAsWarnings_;
-#ifdef NETWORKCLIENT_USEMUTEX
-        static std::mutex _mutex;
-#endif
-    static bool _curl_init;
-    static bool _is_openssl;
-    static std::string certFileName;
 };
 
 #endif

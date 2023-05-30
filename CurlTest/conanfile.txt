@@ -1,0 +1,9 @@
+[requires]
+libcurl/7.84.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+libcurl:with_ssl=openssl
