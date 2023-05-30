@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <cstring>
 #include <cstdio>
 #include <algorithm>
 #include <iostream>
@@ -154,8 +155,7 @@ int64_t GetBigFileSize(const NString& utf8Filename)
     _wstati64(Utf8ToWide(utf8Filename).c_str(), &stats);
 #else
     struct stat64 stats;
-    std::string path = Utf8ToSystemLocale(utf8Filename);
-    if (-1 == stat64(path.c_str(), &stats))
+    if (-1 == stat64(utf8Filename.c_str(), &stats))
     {
         return -1;
     }
