@@ -28,16 +28,12 @@
 
 #include "NetworkClient.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
 #include <cstring>
 #include <cstdio>
 #include <algorithm>
 #include <iostream>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include <Windows.h>
 #endif
 
@@ -143,24 +139,15 @@ int Fseek64( FILE* stream, int64_t  offset, int origin) {
 #endif
 }
 
-int64_t GetBigFileSize(const NString& utf8Filename)
+int64_t Ftell64(FILE* a)
 {
-#ifdef _WIN32
-    #ifdef _MSC_VER
-    struct _stat64 stats;
-    #else
-    struct _stati64 stats;
-    #endif
-
-    _wstati64(Utf8ToWide(utf8Filename).c_str(), &stats);
+#ifdef __CYGWIN__
+    return ftell(a);
+#elif defined (_WIN32)
+    return _ftelli64(a);
 #else
-    struct stat64 stats;
-    if (-1 == stat64(utf8Filename.c_str(), &stats))
-    {
-        return -1;
-    }
+    return ftello(a);
 #endif
-    return stats.st_size;
 }
 
 size_t SimpleReadCallback(void* ptr, size_t size, size_t nmemb, void* stream) {
@@ -607,10 +594,22 @@ bool NetworkClient::doUpload(const NString& fileName, const NString& data) {
         if (!uploadingFile_) {
             return false; /* can't continue */
         }
-        currentFileSize_ = NetworkClientInternal::GetBigFileSize(fileName);
-        currentUploadDataSize_ = currentFileSize_;
-        if (currentFileSize_ < 0)
+        if (fseek(uploadingFile_, 0, SEEK_END) == 0) {
+            currentFileSize_ = NetworkClientInternal::Ftell64(uploadingFile_);
+            NetworkClientInternal::Fseek64(uploadingFile_, 0, SEEK_SET);
+        } else {
+            fclose(uploadingFile_);
+            uploadingFile_ = nullptr;
+            //currentFileSize_ = NetworkClientInternal::GetBigFileSize(fileName);
             return false;
+        }
+        
+        currentUploadDataSize_ = currentFileSize_;
+        if (currentFileSize_ < 0) {
+            fclose(uploadingFile_);
+            uploadingFile_ = nullptr;
+            return false;
+        }
         if (chunkSize_ > 0 && chunkOffset_ >= 0) {
             currentUploadDataSize_ = chunkSize_;
             if (NetworkClientInternal::Fseek64(uploadingFile_, chunkOffset_, SEEK_SET)) {
@@ -690,8 +689,7 @@ void NetworkClient::setChunkSize(int64_t size) {
 }
 
 NString NetworkClient::getCurlResultString() const {
-    const char* str = curl_easy_strerror(curlResult_);
-    return str;
+    return curl_easy_strerror(curlResult_);
 }
 
 void NetworkClient::setCurlOption(int option, const NString& value) {

@@ -1,6 +1,6 @@
 # curl-cpp-wrapper
 
-A very simple HTTP client (C++ wrapper for libcurl). Requires [libcurl](https://curl.se ) as dependency.
+A very simple HTTP client (C++ 11 wrapper for libcurl). Requires [libcurl](https://curl.se ) as dependency.
 
 ## Usage
 
