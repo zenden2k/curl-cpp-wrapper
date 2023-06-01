@@ -1,5 +1,7 @@
 [requires]
 libcurl/7.84.0
+gtest/1.10.0
+jsoncpp/1.9.5
 
 [generators]
 CMakeDeps

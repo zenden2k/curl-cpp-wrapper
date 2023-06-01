@@ -3,15 +3,8 @@
 On Windows with Visual Studio:
 
 cd Build
-conan install .. --build=missing
-cmake .. -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
-cmake --build .
-
-With MSYS2:
-
-pacman -S libcurl-devel
-cd Build
-cmake ..
+conan install .. --build=missing -s build_type=Debug
+cmake .. -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake 
 cmake --build .
 
 On Linux:
@@ -31,4 +24,10 @@ sudo apt-get install libcurl4-openssl-dev
 cmake ..
 cmake --build .
 
+In MSYS2 (just for test):
+
+pacman -S libcurl-devel
+cd Build
+cmake ..
+cmake --build .
 

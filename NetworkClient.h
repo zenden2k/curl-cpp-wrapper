@@ -22,6 +22,7 @@
 #define CURL_CPP_WRAPPER_NETWORK_CLIENT_H
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <curl/curl.h>
@@ -101,7 +102,7 @@ public:
     NString responseHeaderText() const;
     NString responseHeaderByName(const NString& name) const;
     NString responseHeaderByIndex(int index, NString& name) const;
-    int responseHeaderCount() const;
+    size_t responseHeaderCount() const;
     void setProgressCallback(curl_progress_callback func, void* data);
     NString urlEncode(const NString& str);
     NString getCurlResultString() const;
@@ -130,6 +131,10 @@ private:
     {
         NString name;
         NString value;
+        CustomHeaderItem() = default;
+        CustomHeaderItem(NString n, NString v): name(std::move(n)), value(std::move(v)) {
+            
+        }
     };
 
     struct QueryParam
@@ -153,7 +158,7 @@ private:
     void private_cleanup_before();
     void private_cleanup_after();
     bool private_on_finish_request();
-    void private_initTransfer();
+    void private_init_transfer();
 
     int uploadBufferSize_;
     CURL* curlHandle_;
@@ -182,6 +187,7 @@ private:
     struct curl_slist* chunk_;
     int64_t chunkOffset_;
     int64_t chunkSize_;
+    bool curlWinUnicode_;
 };
 
 #endif
