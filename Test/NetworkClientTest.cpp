@@ -14,7 +14,7 @@ class NetworkClientTest : public testing::Test {
 protected:
 
     void SetUp() override {
-        serverAddress_ = "http://127.0.0.1:" + std::to_string(SERVER_PORT) + "";
+        serverAddress_ = "http://127.0.0.1:" + std::to_string(SERVER_PORT);
 
         if (directoryExists("./TestData")) {
             testDirectory_ = "./TestData/";
@@ -61,7 +61,7 @@ TEST_F(NetworkClientTest, Get) {
         EXPECT_EQ(200, nc.responseCode());
         EXPECT_GT(nc.responseHeaderCount(), 0);
         EXPECT_EQ("application/json", nc.responseHeaderByName("Content-Type"));
-        NString headerName;
+        std::string headerName;
         EXPECT_FALSE(nc.responseHeaderByIndex(1, headerName).empty());
         EXPECT_FALSE(headerName.empty());
         EXPECT_FALSE(nc.responseHeaderText().empty());
@@ -190,7 +190,7 @@ TEST_F(NetworkClientTest, UploadUnicodePath) {
     {
         Json::Value root;
         nc.setUrl(serverAddress_ + "/upload_multipart");
-        nc.addQueryParamFile("file", resolvePath(fileName), "test_" + fileName);
+        nc.addQueryParamFile("file", resolvePath(fileName), "test_" + fileName, "");
         nc.addQueryParam("name", "John");
 
         ASSERT_TRUE(nc.doUploadMultipartData());
