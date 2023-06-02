@@ -273,7 +273,7 @@ TEST_F(NetworkClientTest, UploadChunk) {
         // Upload entire file
         nc.setChunkOffset(0);
         nc.setChunkSize(6812);
-        EXPECT_TRUE(nc.doUpload("webp-supported.webp", ""));
+        EXPECT_TRUE(nc.doUpload(resolvePath("webp-supported.webp"), ""));
         EXPECT_EQ(201, nc.responseCode());
         ASSERT_TRUE(reader.parse(nc.responseBody(), root, false));
         EXPECT_STREQ("f12d51ae11430d960899775f9627578b", root["hash"].asCString());
@@ -286,7 +286,7 @@ TEST_F(NetworkClientTest, UploadChunk) {
         nc.setUrl(serverAddress_ + "/upload");
         nc.setChunkOffset(1000);
         nc.setChunkSize(2000);
-        EXPECT_TRUE(nc.doUpload("webp-supported.webp", ""));
+        EXPECT_TRUE(nc.doUpload(resolvePath("webp-supported.webp"), ""));
         EXPECT_EQ(201, nc.responseCode());
         ASSERT_TRUE(reader.parse(nc.responseBody(), root, false));
         EXPECT_STREQ("a60e4df55cdba901aa93860f21e7784e", root["hash"].asCString());
@@ -300,7 +300,7 @@ TEST_F(NetworkClientTest, UploadChunk) {
         // Upload entire file
         nc.setChunkOffset(-1);
         nc.setChunkSize(-1);
-        EXPECT_TRUE(nc.doUpload("webp-supported.webp", ""));
+        EXPECT_TRUE(nc.doUpload(resolvePath("webp-supported.webp"), ""));
         EXPECT_EQ(201, nc.responseCode());
         ASSERT_TRUE(reader.parse(nc.responseBody(), root, false));
         EXPECT_STREQ("f12d51ae11430d960899775f9627578b", root["hash"].asCString());

@@ -4,7 +4,7 @@ On Windows with Visual Studio:
 
 cd Build
 conan install .. --build=missing -s build_type=Debug
-cmake .. -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake 
+cmake .. -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake  -DCMAKE_BUILD_TYPE=Debug
 cmake --build .
 
 On Linux:
