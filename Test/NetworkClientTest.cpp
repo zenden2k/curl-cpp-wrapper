@@ -166,6 +166,19 @@ TEST_F(NetworkClientTest, Upload) {
         EXPECT_STREQ("f12d51ae11430d960899775f9627578b", root["hash"].asCString());
         EXPECT_STREQ("Bill", root["name"].asCString());
     }
+    {
+        nc.setMethod("GET");
+        nc.addQueryHeader("X-Hello-World", "Hello");
+        ASSERT_TRUE(nc.doGet(serverAddress_ + "/get_full?first=John&last=Smith"));
+        EXPECT_EQ(200, nc.responseCode());
+        Json::Value root2;
+
+        EXPECT_TRUE(reader.parse(nc.responseBody(), root2, false));
+
+        EXPECT_STREQ("John", root2["first"].asCString());
+        EXPECT_STREQ("Smith", root2["last"].asCString());
+        EXPECT_STREQ("Hello", root2["custom_header"].asCString());
+    }
 }
 
 TEST_F(NetworkClientTest, UploadUnicodePath) {

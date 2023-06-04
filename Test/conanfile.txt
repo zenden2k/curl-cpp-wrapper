@@ -1,5 +1,5 @@
 [requires]
-libcurl/7.84.0
+libcurl/7.87.0
 gtest/1.10.0
 jsoncpp/1.9.5
 

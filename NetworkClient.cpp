@@ -563,6 +563,7 @@ void NetworkClient::private_cleanup_before() {
     headerBuffer_.clear();
     curl_easy_setopt(curlHandle_, CURLOPT_READFUNCTION, nullptr);
     curl_easy_setopt(curlHandle_, CURLOPT_SEEKFUNCTION, nullptr);
+    curl_easy_setopt(curlHandle_, CURLOPT_READDATA, stdin);
 }
 
 void NetworkClient::private_cleanup_after() {
