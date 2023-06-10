@@ -1,0 +1,11 @@
+[requires]
+libcurl/7.87.0
+gtest/1.10.0
+jsoncpp/1.9.5
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+libcurl:with_ssl=openssl

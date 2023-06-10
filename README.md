@@ -1,10 +1,10 @@
 # curl-cpp-wrapper
 
-A very simple HTTP client (C++ wrapper for curl). Requires libcurl http://curl.haxx.se
+A very simple HTTP client (C++ 11 wrapper for libcurl). Requires [libcurl](https://curl.se ) as dependency.
 
-If you are using Visual C++ your also have to install msinttypes (headers are provided in "include" directory).
+## Usage
 
-Usage
+Just add NetworkClient.cpp and NetworkClient.h files to your project.
 
 Do a GET request:
 ```cpp
@@ -33,24 +33,22 @@ nc.doPost("param1=value&param=value");
 Downloading a file:
 ```cpp
 NetworkClient nc;
-nc.setOutputFile("d:\\image.png"); //only UTF-8 file names are supported on Windows
+nc.setOutputFile("d:\\image.png"); // file path should be UTF-8 encoded on Windows
 nc.doGet("http://i.imgur.com/DDf2wbJ.png");
 ```
 
 Uploading a file:
 ```cpp
 #include "NetworkClient.h"
-#include "Core/Utils/CoreUtils.h"
 NetworkClient nc;
-std::string fileName = "c:\\test\\file.txt"; //only UTF-8 file names are supported on Windows
-//std::string fileName = IuCoreUtils::SystemLocaleToUtf8(fileName); <-- if you want to upload a file with ANSI filename on Windows
+std::string fileName = "c:\\test\\file.txt"; // file path should be UTF-8 encoded on Windows
 nc.setUrl("http://takebin.com/action");
-nc.addQueryParamFile("file", fileName, IuCoreUtils::ExtractFileName(FileName),"");
+nc.addQueryParamFile("file", fileName, "file.txt", "");
 nc.addQueryParam("fileDesc", "cool file");
 
 nc.doUploadMultipartData();
 if ( nc.responseCode() == 200 )  {
-		std::cout << nc.responseBody();
+    std::cout << nc.responseBody();
 }
 ```
 
@@ -58,7 +56,7 @@ Do a PUT request:
 ```cpp
 nc.setMethod("PUT");
 nc.setUrl("https://www.googleapis.com/drive/v2/files/" + id);
-nc.addQueryHeader("Authorization", "Basic ");
+nc.addQueryHeader("Authorization", "Basic ...");
 nc.addQueryHeader("Content-Type", "application/json");
 std::string postData = "{\"title\" = \"SmellyCat.jpg\"}";
 nc.doUpload("", postData);
@@ -66,7 +64,7 @@ nc.doUpload("", postData);
 
 Uploading a file to FTP:
 ```cpp
-std::string fileName = "c:\\test\\file.txt";
+std::string fileName = "c:\\test\\file.txt";  // file path should be UTF-8 encoded on Windows
 nc.setUrl("ftp://example.com");
 nc.setMethod("PUT");
 nc.doUpload(fileName, "");
@@ -78,8 +76,10 @@ nc.setProxy("127.0.0.1", "8888", CURLPROXY_HTTP); // CURLPROXY_HTTP, CURLPROXY_S
 ```
 Custom request header:
 ```
-nc.addQueryHeader("User-Agent", "Mozilla/5.0");
+nc.addQueryHeader("Content-Type", "application/json");
 ```
+## Attention
 
-If you want to use HTTPS, you should compile libcurl with openssl support (you could also use WinSSL on Windows). 
-If you compile libcurl for windows with OpenSSL support (instead of WinSSL), you should put "curl-ca-bundle.crt" file into your application's directory).
+You **should** build libcurl with **Unicode** feature enabled on Windows,  otherwise, file upload may fail.
+
+If you compile libcurl for Windows with OpenSSL support (instead of Schannel), you should put "curl-ca-bundle.crt" file into your application's binary directory).

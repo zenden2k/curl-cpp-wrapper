@@ -1,0 +1,13 @@
+Test/Build
+*vcproj.*.user
+*.suo
+*.pdb
+*.ncb
+*.pch
+*.idb
+*.vcxproj.user
+ipch/
+*.obj
+*.aps
+.vs/
+.vscode/
