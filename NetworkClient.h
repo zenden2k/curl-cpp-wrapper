@@ -182,8 +182,8 @@ private:
     std::string internalBuffer_;
     std::string headerBuffer_;
     NString userAgent_;
-    char m_errorBuffer[CURL_ERROR_SIZE];
-    std::string m_method;
+    char errorBuffer_[CURL_ERROR_SIZE];
+    std::string method_;
     struct curl_slist* chunk_;
     int64_t chunkOffset_;
     int64_t chunkSize_;

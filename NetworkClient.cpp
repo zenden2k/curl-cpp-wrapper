@@ -191,7 +191,6 @@ struct CurlInitializer {
         curl_global_cleanup();
     }
 };
-
 }
 
 NetworkClient::NetworkClient():
@@ -211,7 +210,7 @@ NetworkClient::NetworkClient():
 {
     static NetworkClientInternal::CurlInitializer initializer;
 
-    *m_errorBuffer = 0;
+    *errorBuffer_ = 0;
     curlHandle_ = curl_easy_init();
     bodyFuncData_.funcType = funcTypeBody;
     bodyFuncData_.nmanager = this;
@@ -225,7 +224,7 @@ NetworkClient::NetworkClient():
     curl_easy_setopt(curlHandle_, CURLOPT_WRITEFUNCTION, private_static_writer);
     curl_easy_setopt(curlHandle_, CURLOPT_WRITEDATA, &bodyFuncData_);
     curl_easy_setopt(curlHandle_, CURLOPT_WRITEHEADER, &headerFuncData_);
-    curl_easy_setopt(curlHandle_, CURLOPT_ERRORBUFFER, m_errorBuffer);
+    curl_easy_setopt(curlHandle_, CURLOPT_ERRORBUFFER, errorBuffer_);
 
     curl_easy_setopt(curlHandle_, CURLOPT_PROGRESSFUNCTION, &private_progress_func);
     curl_easy_setopt(curlHandle_, CURLOPT_NOPROGRESS, 0L);
@@ -340,7 +339,7 @@ size_t NetworkClient::private_progress_func(void* clientp, double dltotal, doubl
 }
 
 void NetworkClient::setMethod(const NString& str) {
-    m_method = str;
+    method_ = str;
 }
 
 void NetworkClient::addQueryParam(const NString& name, const NString& value) {
@@ -368,9 +367,10 @@ void NetworkClient::setUrl(const NString& url) {
 }
 
 bool NetworkClient::doUploadMultipartData() {
-    if (m_method.empty()) {
+    if (method_.empty()) {
         setMethod("POST");
     }
+    
     private_init_transfer();
     private_apply_method();
 
@@ -486,7 +486,7 @@ NString NetworkClient::urlEncode(const NString& str) {
 }
 
 NString NetworkClient::errorString() const {
-    return m_errorBuffer;
+    return errorBuffer_;
 }
 
 void NetworkClient::setUserAgent(const NString& userAgentStr) {
@@ -575,7 +575,7 @@ void NetworkClient::private_cleanup_after() {
         outFile_ = nullptr;
     }
     outFileName_.clear();
-    m_method.clear();
+    method_.clear();
     curl_easy_setopt(curlHandle_, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(-1));
 
     uploadData_.clear();
@@ -663,6 +663,7 @@ bool NetworkClient::doUpload(const NString& fileName, const NString& data) {
     /*if (m_method != "PUT") {
     addQueryHeader("Content-Length", std::to_string(currentUploadDataSize_));
     }*/
+    curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(currentUploadDataSize_));
 
     curl_easy_setopt(curlHandle_, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(currentUploadDataSize_));
 
@@ -676,14 +677,14 @@ bool NetworkClient::doUpload(const NString& fileName, const NString& data) {
 bool NetworkClient::private_apply_method() {
     curl_easy_setopt(curlHandle_, CURLOPT_CUSTOMREQUEST,nullptr);
     curl_easy_setopt(curlHandle_, CURLOPT_UPLOAD, 0L);
-    if (m_method == "POST")
+    if (method_ == "POST")
         curl_easy_setopt(curlHandle_, CURLOPT_POST, 1L);
-    else if (m_method == "GET")
+    else if (method_ == "GET")
         curl_easy_setopt(curlHandle_, CURLOPT_HTTPGET, 1L);
-    else if (m_method == "PUT")
+    else if (method_ == "PUT")
         curl_easy_setopt(curlHandle_, CURLOPT_UPLOAD, 1L);
-    else if (!m_method.empty()) {
-        curl_easy_setopt(curlHandle_, CURLOPT_CUSTOMREQUEST, m_method.c_str());
+    else if (!method_.empty()) {
+        curl_easy_setopt(curlHandle_, CURLOPT_CUSTOMREQUEST, method_.c_str());
     } else {
         curl_easy_setopt(curlHandle_, CURLOPT_CUSTOMREQUEST, nullptr);
         return false;
