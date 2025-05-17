@@ -130,7 +130,7 @@ std::string Utf8ToSystemLocale(const std::string& str)
 #endif
 
 FILE* Fopen(const char* filename, const char* mode) {
-#ifdef _WIN32
+#ifdef _MSC_VER
     return _wfopen(Utf8ToWide(filename).c_str(), Utf8ToWide(mode).c_str());
 #else
     return fopen(filename, mode);
@@ -287,15 +287,15 @@ size_t NetworkClient::private_static_writer(char* data, size_t size, size_t nmem
     return 0;
 }
 
-void NetworkClient::setProxy(const NString& host, int port, int type) {
+NetworkClient& NetworkClient::setProxy(const std::string& host, int port, int type) {
     curl_easy_setopt(curlHandle_, CURLOPT_PROXY, host.c_str());
     curl_easy_setopt(curlHandle_, CURLOPT_PROXYPORT, static_cast<long>(port));
     curl_easy_setopt(curlHandle_, CURLOPT_PROXYTYPE, static_cast<long>(type));
     curl_easy_setopt(curlHandle_, CURLOPT_NOPROXY, "");
-    //curl_easy_setopt(curlHandle_, CURLOPT_NOPROXY, "localhost,127.0.0.1"); // test
+    return *this;
 }
 
-void NetworkClient::setProxyUserPassword(const NString& username, const NString& password) {
+NetworkClient& NetworkClient::setProxyUserPassword(const std::string& username, const std::string& password) {
     if (username.empty() && password.empty()) {
         curl_easy_setopt(curlHandle_, CURLOPT_PROXYUSERPWD, nullptr);
         curl_easy_setopt(curlHandle_, CURLOPT_PROXYAUTH, nullptr);
@@ -305,6 +305,7 @@ void NetworkClient::setProxyUserPassword(const NString& username, const NString&
         curl_easy_setopt(curlHandle_, CURLOPT_PROXYUSERPWD, authStr.c_str());
         curl_easy_setopt(curlHandle_, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
     }
+    return *this;
 }
 
 size_t NetworkClient::private_writer(char* data, size_t size, size_t nmemb) {
@@ -338,20 +339,22 @@ size_t NetworkClient::private_progress_func(void* clientp, double dltotal, doubl
     return 0;
 }
 
-void NetworkClient::setMethod(const NString& str) {
+NetworkClient& NetworkClient::setMethod(const std::string& str) {
     method_ = str;
+    return *this;
 }
 
-void NetworkClient::addQueryParam(const NString& name, const NString& value) {
+NetworkClient& NetworkClient::addQueryParam(const std::string& name, const std::string& value) {
     QueryParam newParam;
     newParam.name = name;
     newParam.value = value;
     newParam.isFile = false;
     queryParams_.push_back(newParam);
+    return *this;
 }
 
-void NetworkClient::addQueryParamFile(const NString& name, const NString& fileName, const NString& displayName,
-                                      const NString& contentType) {
+NetworkClient& NetworkClient::addQueryParamFile(const std::string& name, const std::string& fileName, const std::string& displayName,
+                                      const std::string& contentType) {
     QueryParam newParam;
     newParam.name = name;
     newParam.value = fileName;
@@ -359,11 +362,13 @@ void NetworkClient::addQueryParamFile(const NString& name, const NString& fileNa
     newParam.contentType = contentType;
     newParam.displayName = displayName;
     queryParams_.push_back(newParam);
+    return *this;
 }
 
-void NetworkClient::setUrl(const NString& url) {
+NetworkClient& NetworkClient::setUrl(const std::string& url) {
     url_ = url;
     curl_easy_setopt(curlHandle_, CURLOPT_URL, url.c_str());
+    return *this;
 }
 
 bool NetworkClient::doUploadMultipartData() {
@@ -438,8 +443,9 @@ int NetworkClient::responseCode() const {
     return result;
 }
 
-void NetworkClient::addQueryHeader(const NString& name, const NString& value) {
+NetworkClient& NetworkClient::addQueryHeader(const std::string& name, const std::string& value) {
     queryHeaders_.emplace_back(name, value);
+    return *this;
 }
 
 bool NetworkClient::doGet(const std::string& url) {
@@ -455,7 +461,7 @@ bool NetworkClient::doGet(const std::string& url) {
 
 }
 
-bool NetworkClient::doPost(const NString& data) {
+bool NetworkClient::doPost(const std::string& data) {
     private_init_transfer();
     if (!private_apply_method())
         curl_easy_setopt(curlHandle_, CURLOPT_POST, 1L);
@@ -467,10 +473,13 @@ bool NetworkClient::doPost(const NString& data) {
         }
     }
 
-    if (data.empty()) {
+    if(data.empty()) {
         curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDS, postData.c_str());
-    } else {
-        curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDS, data.c_str());
+        curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDSIZE, static_cast<long>(postData.length()));
+    }
+    else {
+        curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDS, (const char*)data.data());
+        curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDSIZE, (long)data.length());
     }
 
     currentActionType_ = atPost;
@@ -478,19 +487,20 @@ bool NetworkClient::doPost(const NString& data) {
     return private_on_finish_request();
 }
 
-NString NetworkClient::urlEncode(const NString& str) {
+std::string NetworkClient::urlEncode(const std::string& str) {
     char* encoded = curl_easy_escape(curlHandle_, str.c_str(), str.length());
     std::string res = encoded;
     curl_free(encoded);
     return res;
 }
 
-NString NetworkClient::errorString() const {
+std::string NetworkClient::errorString() const {
     return errorBuffer_;
 }
 
-void NetworkClient::setUserAgent(const NString& userAgentStr) {
+NetworkClient& NetworkClient::setUserAgent(const std::string& userAgentStr) {
     userAgent_ = userAgentStr;
+    return *this;
 }
 
 void NetworkClient::private_init_transfer() {
@@ -510,13 +520,14 @@ void NetworkClient::private_init_transfer() {
     curl_easy_setopt(curlHandle_, CURLOPT_HTTPHEADER, chunk_);
 }
 
-NString NetworkClient::responseHeaderText() const {
+std::string NetworkClient::responseHeaderText() const {
     return headerBuffer_;
 }
 
-void NetworkClient::setProgressCallback(curl_progress_callback func, void* data) {
+NetworkClient& NetworkClient::setProgressCallback(curl_progress_callback func, void* data) {
     progressCallback_ = func;
     progressData_ = data;
+    return *this;
 }
 
 void NetworkClient::private_parse_headers() {
@@ -536,7 +547,7 @@ void NetworkClient::private_parse_headers() {
     }
 }
 
-NString NetworkClient::responseHeaderByName(const NString& name) const {
+std::string NetworkClient::responseHeaderByName(const std::string& name) const {
     std::string lowerName = NetworkClientInternal::StrToLower(name);
 
     for (const auto& it: responseHeaders_) {
@@ -544,14 +555,14 @@ NString NetworkClient::responseHeaderByName(const NString& name) const {
             return it.value;
         }
     }
-    return NString();
+    return std::string();
 }
 
 size_t NetworkClient::responseHeaderCount() const {
     return responseHeaders_.size();
 }
 
-NString NetworkClient::responseHeaderByIndex(int index, NString& name) const {
+std::string NetworkClient::responseHeaderByIndex(int index, std::string& name) const {
     name = responseHeaders_[index].name;
     return responseHeaders_[index].value;
 }
@@ -577,6 +588,7 @@ void NetworkClient::private_cleanup_after() {
     outFileName_.clear();
     method_.clear();
     curl_easy_setopt(curlHandle_, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(-1));
+    curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(-1));
 
     uploadData_.clear();
     uploadingFile_ = nullptr;
@@ -602,7 +614,7 @@ size_t NetworkClient::private_read_callback(void* ptr, size_t size, size_t nmemb
     size_t wantsToRead = size * nmemb;
     if (uploadingFile_) {
         int64_t pos = NetworkClientInternal::Ftell64(uploadingFile_);
-        if (pos >= chunkOffset_ + currentUploadDataSize_) {
+        if (chunkOffset_ >= 0 && pos >= chunkOffset_ + currentUploadDataSize_) {
             return 0;
         }
         retcode = fread(ptr, size, nmemb, uploadingFile_);
@@ -618,7 +630,36 @@ size_t NetworkClient::private_read_callback(void* ptr, size_t size, size_t nmemb
     return retcode;
 }
 
-bool NetworkClient::doUpload(const NString& fileName, const NString& data) {
+int NetworkClient::private_seek_callback(void *userp, curl_off_t offset, int origin) {
+    auto* nc = static_cast<NetworkClient*>(userp);
+
+    if (nc->uploadingFile_) {
+        int64_t newOffset = offset;
+        int newOrigin = origin;
+        if (origin == SEEK_SET && nc->chunkOffset_ != -1) {
+            newOffset = nc->chunkOffset_ + offset;
+        } else if (origin == SEEK_END) {
+            // not implemented
+            return CURL_SEEKFUNC_CANTSEEK;
+        }
+        return NetworkClientInternal::Fseek64(nc->uploadingFile_, newOffset, newOrigin);
+    } else {
+        if (origin == SEEK_SET) {
+            if (offset < 0 || offset>= nc->uploadData_.size()) {
+                return CURL_SEEKFUNC_CANTSEEK;
+            }
+            nc->uploadDataOffset_ = offset;
+        } else if (origin == SEEK_CUR) {
+            nc->uploadDataOffset_ += offset;
+        } else {
+            // not implemented
+            return CURL_SEEKFUNC_CANTSEEK;
+        }
+        return CURL_SEEKFUNC_OK;
+    }
+}
+
+bool NetworkClient::doUpload(const std::string& fileName, const std::string& data) {
     if (!fileName.empty()) {
         uploadingFile_ = NetworkClientInternal::Fopen(fileName.c_str(), "rb"); 
         if (!uploadingFile_) {
@@ -654,15 +695,15 @@ bool NetworkClient::doUpload(const NString& fileName, const NString& data) {
         currentActionType_ = atPost;
     }
     private_init_transfer();
-    curl_easy_setopt(curlHandle_, CURLOPT_READFUNCTION, read_callback);
-    if (!private_apply_method())
-        curl_easy_setopt(curlHandle_, CURLOPT_POST, 1L);
     curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDS, nullptr);
+    if (!private_apply_method()) {
+        curl_easy_setopt(curlHandle_, CURLOPT_POST, 1L);
+    }
+    curl_easy_setopt(curlHandle_, CURLOPT_READFUNCTION, read_callback);
     curl_easy_setopt(curlHandle_, CURLOPT_READDATA, this);
+    curl_easy_setopt(curlHandle_, CURLOPT_SEEKFUNCTION, private_seek_callback);
+    curl_easy_setopt(curlHandle_, CURLOPT_SEEKDATA, this);
 
-    /*if (m_method != "PUT") {
-    addQueryHeader("Content-Length", std::to_string(currentUploadDataSize_));
-    }*/
     curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(currentUploadDataSize_));
 
     curl_easy_setopt(curlHandle_, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(currentUploadDataSize_));
@@ -692,8 +733,9 @@ bool NetworkClient::private_apply_method() {
     return true;
 }
 
-void NetworkClient::setReferer(const NString& str) {
+NetworkClient& NetworkClient::setReferer(const std::string& str) {
     curl_easy_setopt(curlHandle_, CURLOPT_REFERER, str.c_str());
+    return *this;
 }
 
 int NetworkClient::getCurlResult() const {
@@ -704,30 +746,36 @@ CURL* NetworkClient::getCurlHandle() {
     return curlHandle_;
 }
 
-void NetworkClient::setOutputFile(const NString& str) {
+NetworkClient& NetworkClient::setOutputFile(const std::string& str) {
     outFileName_ = str;
+    return *this;
 }
 
-void NetworkClient::setUploadBufferSize(int size) {
+NetworkClient& NetworkClient::setUploadBufferSize(int size) {
     uploadBufferSize_ = size;
+    return *this;
 }
 
-void NetworkClient::setChunkOffset(int64_t offset) {
+NetworkClient& NetworkClient::setChunkOffset(int64_t offset) {
     chunkOffset_ = offset;
+    return *this;
 }
 
-void NetworkClient::setChunkSize(int64_t size) {
+NetworkClient& NetworkClient::setChunkSize(int64_t size) {
     chunkSize_ = size;
+    return *this;
 }
 
-NString NetworkClient::getCurlResultString() const {
+std::string NetworkClient::getCurlResultString() const {
     return curl_easy_strerror(curlResult_);
 }
 
-void NetworkClient::setCurlOption(int option, const NString& value) {
+NetworkClient& NetworkClient::setCurlOption(int option, const std::string& value) {
     curl_easy_setopt(curlHandle_, static_cast<CURLoption>(option), value.c_str());
+    return *this;
 }
 
-void NetworkClient::setCurlOptionInt(int option, long value) {
+NetworkClient& NetworkClient::setCurlOptionInt(int option, long value) {
     curl_easy_setopt(curlHandle_, static_cast<CURLoption>(option), value);
+    return *this;
 }

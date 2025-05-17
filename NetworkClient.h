@@ -27,8 +27,6 @@
 
 #include <curl/curl.h>
 
-using NString = std::string;
-
 class NetworkClient
 {
 public:
@@ -48,7 +46,7 @@ public:
     /**
      * Adds a parameter to the POST request with the name and value
      */
-    void addQueryParam(const NString& name, const NString& value);
+    NetworkClient& addQueryParam(const std::string& name, const std::string& value);
 
     /**
      * Adds a file parameter to the MULTIPART/DATA POST request.
@@ -62,26 +60,26 @@ public:
      * @param contentType is the mime file type, can be an empty string or obtained using the GetFileMimeType function).
      * The method is similar to the HTML form element - <input type="file">.
     */
-    void addQueryParamFile(const NString& name, const NString& fileName, const NString& displayName = "",
-                           const NString& contentType = "");
+    NetworkClient& addQueryParamFile(const std::string& name, const std::string& fileName, const std::string& displayName = "",
+                           const std::string& contentType = "");
 
     /**
      * Sets the value of the HTTP request header. To delete a header, pass in an empty string.
      * To set an empty value, pass new line.
      */
-    void addQueryHeader(const NString& name, const NString& value);
+    NetworkClient& addQueryHeader(const std::string& name, const std::string& value);
 
     /**
      * Sets the URL for the next request.
     */
-    void setUrl(const NString& url);
+    NetworkClient& setUrl(const std::string& url);
 
     /**
      * Performs a POST request.
      * @param data - the request body (for example, "param1=value&param2=value2").
      *  If data is an empty string, the parameters previously set using the addQueryParam() function are used.
      */
-    bool doPost(const NString& data = "");
+    bool doPost(const std::string& data = "");
 
     /**
      * Sends a request to the address set by the function setUrl as parameters and files encoded in the
@@ -93,29 +91,29 @@ public:
     /**
      * Sending a file or data directly in the body of a POST request
      */
-    bool doUpload(const NString& fileName, const NString& data);
+    bool doUpload(const std::string& fileName, const std::string& data);
     bool doGet(const std::string& url = "");
     std::string responseBody() const;
     int responseCode() const;
-    NString errorString() const;
-    void setUserAgent(const NString& userAgentStr);
-    NString responseHeaderText() const;
-    NString responseHeaderByName(const NString& name) const;
-    NString responseHeaderByIndex(int index, NString& name) const;
+    std::string errorString() const;
+    NetworkClient& setUserAgent(const std::string& userAgentStr);
+    std::string responseHeaderText() const;
+    std::string responseHeaderByName(const std::string& name) const;
+    std::string responseHeaderByIndex(int index, std::string& name) const;
     size_t responseHeaderCount() const;
-    void setProgressCallback(curl_progress_callback func, void* data);
-    NString urlEncode(const NString& str);
-    NString getCurlResultString() const;
-    void setCurlOption(int option, const NString& value);
-    void setCurlOptionInt(int option, long value);
-    void setMethod(const NString& str);
-    void setProxy(const NString& host, int port, int type);
-    void setProxyUserPassword(const NString& username, const NString& password);
-    void setReferer(const NString& str);
-    void setOutputFile(const NString& str);
-    void setUploadBufferSize(int size);
-    void setChunkOffset(int64_t offset);
-    void setChunkSize(int64_t size);
+    NetworkClient& setProgressCallback(curl_progress_callback func, void* data);
+    std::string urlEncode(const std::string& str);
+    std::string getCurlResultString() const;
+    NetworkClient& setCurlOption(int option, const std::string& value);
+    NetworkClient& setCurlOptionInt(int option, long value);
+    NetworkClient& setMethod(const std::string& str);
+    NetworkClient& setProxy(const std::string& host, int port, int type);
+    NetworkClient& setProxyUserPassword(const std::string& username, const std::string& password);
+    NetworkClient& setReferer(const std::string& str);
+    NetworkClient& setOutputFile(const std::string& str);
+    NetworkClient& setUploadBufferSize(int size);
+    NetworkClient& setChunkOffset(int64_t offset);
+    NetworkClient& setChunkSize(int64_t size);
     int getCurlResult() const;
     CURL* getCurlHandle();
 private:
@@ -129,10 +127,10 @@ private:
 
     struct CustomHeaderItem
     {
-        NString name;
-        NString value;
+        std::string name;
+        std::string value;
         CustomHeaderItem() = default;
-        CustomHeaderItem(NString n, NString v): name(std::move(n)), value(std::move(v)) {
+        CustomHeaderItem(std::string n, std::string v): name(std::move(n)), value(std::move(v)) {
             
         }
     };
@@ -140,10 +138,10 @@ private:
     struct QueryParam
     {
         bool isFile;
-        NString name;
-        NString value; // also filename
-        NString displayName;
-        NString contentType;
+        std::string name;
+        std::string value; // also filename
+        std::string displayName;
+        std::string contentType;
     };
 
     static size_t read_callback(void* ptr, size_t size, size_t nmemb, void* stream);
@@ -152,6 +150,7 @@ private:
     size_t private_writer(char* data, size_t size, size_t nmemb);
     size_t private_header_writer(char* data, size_t size, size_t nmemb);
     size_t private_read_callback(void* ptr, size_t size, size_t nmemb, void* stream);
+    static int private_seek_callback(void *userp, curl_off_t offset, int origin);
     static int set_sockopts(void* clientp, curl_socket_t sockfd, curlsocktype purpose);
     bool private_apply_method();
     void private_parse_headers();
@@ -171,7 +170,7 @@ private:
     CallBackData bodyFuncData_;
     curl_progress_callback progressCallback_;
     CallBackData headerFuncData_;
-    NString url_;
+    std::string url_;
     void* progressData_;
     CURLcode curlResult_;
     int64_t currentFileSize_;
@@ -181,7 +180,7 @@ private:
     std::vector<CustomHeaderItem> responseHeaders_;
     std::string internalBuffer_;
     std::string headerBuffer_;
-    NString userAgent_;
+    std::string userAgent_;
     char errorBuffer_[CURL_ERROR_SIZE];
     std::string method_;
     struct curl_slist* chunk_;
