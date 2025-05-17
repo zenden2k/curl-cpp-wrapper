@@ -102,8 +102,7 @@ TEST_F(NetworkClientTest, Post) {
     Json::Reader reader;
 
     {
-        nc.setUrl(serverAddress_ + "/post");
-        nc.addQueryParam("name", "John");
+        nc.setUrl(serverAddress_ + "/post").addQueryParam("name", "John");
         ASSERT_TRUE(nc.doPost(""));
         Json::Value root;
 
@@ -147,8 +146,8 @@ TEST_F(NetworkClientTest, Upload) {
     {
         Json::Value root;
 
-        nc.setMethod("PUT");
-        nc.setUrl(serverAddress_ + "/upload");
+        nc.setMethod("PUT")
+          .setUrl(serverAddress_ + "/upload");
         EXPECT_TRUE(nc.doUpload(resolvePath("webp-supported.webp"), ""));
         EXPECT_EQ(201, nc.responseCode());
         ASSERT_TRUE(reader.parse(nc.responseBody(), root, false));
@@ -157,9 +156,9 @@ TEST_F(NetworkClientTest, Upload) {
     
     {
         Json::Value root;
-        nc.setUrl(serverAddress_ + "/upload_multipart");
-        nc.addQueryParam("name", "Bill");
-        nc.addQueryParamFile("file", resolvePath("webp-supported.webp"), "display_name.webp", "image/webp");
+        nc.setUrl(serverAddress_ + "/upload_multipart")
+          .addQueryParam("name", "Bill")
+          .addQueryParamFile("file", resolvePath("webp-supported.webp"), "display_name.webp", "image/webp");
         ASSERT_TRUE(nc.doUploadMultipartData());
         EXPECT_EQ(200, nc.responseCode());
         ASSERT_TRUE(reader.parse(nc.responseBody(), root, false));

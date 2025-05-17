@@ -1,5 +1,5 @@
 [requires]
-libcurl/7.87.0
+libcurl/8.12.1
 gtest/1.10.0
 jsoncpp/1.9.5
 
@@ -8,4 +8,3 @@ CMakeDeps
 CMakeToolchain
 
 [options]
-libcurl:with_ssl=openssl
