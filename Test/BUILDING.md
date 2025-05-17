@@ -4,8 +4,8 @@
 
 ```bash
 mkdir Build
+conan install . --build=missing -s build_type=Debug --output-folder=Build
 cd Build
-conan install .. --build=missing -s build_type=Debug
 cmake .. -G "Visual Studio 16 2019" --toolchain=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
 cmake --build .
 ```
@@ -13,8 +13,9 @@ cmake --build .
 ## On Linux
 
 ```bash
+mkdir Build
+conan install . --build=missing -s build_type=Debug --output-folder=Build
 cd Build
-conan install .. --build=missing -s build_type=Debug
 cmake .. --toolchain=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
 cmake --build .
 ```

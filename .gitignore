@@ -1,4 +1,5 @@
 Test/Build
+Test/.cmake
 *vcproj.*.user
 *.suo
 *.pdb
@@ -11,3 +12,4 @@ ipch/
 *.aps
 .vs/
 .vscode/
+CMakeUserPresets.json
