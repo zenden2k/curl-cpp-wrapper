@@ -587,8 +587,20 @@ void NetworkClient::private_cleanup_after() {
     }
     outFileName_.clear();
     method_.clear();
+
+    curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDS, nullptr);
+    curl_easy_setopt(curlHandle_, CURLOPT_MIMEPOST, nullptr);
     curl_easy_setopt(curlHandle_, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(-1));
     curl_easy_setopt(curlHandle_, CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(-1));
+    curl_easy_setopt(curlHandle_, CURLOPT_HTTPHEADER, nullptr);
+    curl_easy_setopt(curlHandle_, CURLOPT_CUSTOMREQUEST, nullptr);
+    curl_easy_setopt(curlHandle_, CURLOPT_UPLOAD, 0L);
+    curl_easy_setopt(curlHandle_, CURLOPT_NOBODY, 0L);
+    curl_easy_setopt(curlHandle_, CURLOPT_HTTPGET, 1L);
+    curl_easy_setopt(curlHandle_, CURLOPT_READFUNCTION, nullptr);
+    curl_easy_setopt(curlHandle_, CURLOPT_SEEKFUNCTION, nullptr);
+    curl_easy_setopt(curlHandle_, CURLOPT_SEEKDATA, nullptr);
+    curl_easy_setopt(curlHandle_, CURLOPT_READDATA, stdin);
 
     uploadData_.clear();
     uploadingFile_ = nullptr;
